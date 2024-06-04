@@ -129,8 +129,8 @@ class FiringRateController:
         even indexes (0,2,4,...) = left muscle activations
         odd indexes (1,3,5,...) = right muscle activations
         """
-        left_muscles = self.state[iteration, self.left_m]
-        right_muscles = self.state[iteration, self.right_m]
+        left_muscles = self.state[iteration, self.left_m] * self.pars.act_strength
+        right_muscles = self.state[iteration, self.right_m] * self.pars.act_strength
         return np.ravel(np.column_stack((left_muscles, right_muscles)))
 
     def ode_rhs(self, _time, state, pos=None):
@@ -172,15 +172,19 @@ class FiringRateController:
         # CPG dynamics
         input_left = self.pars.I - self.pars.b * state[self.left_a]
         input_right = self.pars.I - self.pars.b * state[self.right_a]
-        self.dstate[self.left_v] = (-state[self.left_v] + np.maximum(
-            input_left - self.pars.w_inh * np.multiply(W_in.dot(np.ones(state[self.right_v].shape)).reshape(1,-1), state[self.right_v]), 0)) / self.pars.tau
-        self.dstate[self.right_v] = (-state[self.right_v] + np.maximum(
-            input_right - self.pars.w_inh * np.multiply(W_in.dot(np.ones(state[self.left_v].shape)).reshape(1,-1), state[self.left_v]), 0)) / self.pars.tau
+        self.dstate[self.left_v] = (-state[self.left_v] + np.sqrt(np.maximum(
+            input_left - self.pars.w_inh * np.multiply(W_in.dot(np.ones(state[self.right_v].shape)),
+                                                       state[self.right_v]), 0))) / self.pars.tau
+        self.dstate[self.right_v] = (-state[self.right_v] + np.sqrt(np.maximum(
+            input_right - self.pars.w_inh * np.multiply(W_in.dot(np.ones(state[self.left_v].shape)),
+                                                        state[self.left_v]), 0))) / self.pars.tau
 
         # Muscle dynamics
-        self.dstate[self.left_m] = (self.pars.w_V2a2muscle * W_mc.dot(state[self.left_v]) * (1 - state[self.left_m]) / self.pars.taum_a \
-                                    - state[self.left_m] / self.pars.taum_d)
-        self.dstate[self.right_m] = (self.pars.w_V2a2muscle * W_mc.dot(state[self.right_v]) * (1 - state[self.right_m]) / self.pars.taum_a \
+        self.dstate[self.left_m] = (
+                    self.pars.w_V2a2muscle * W_mc.dot(state[self.left_v]) * (1 - state[self.left_m]) / self.pars.taum_a
+                    - state[self.left_m] / self.pars.taum_d)
+        self.dstate[self.right_m] = (self.pars.w_V2a2muscle * W_mc.dot(state[self.right_v]) * (
+                    1 - state[self.right_m]) / self.pars.taum_a
                                      - state[self.right_m] / self.pars.taum_d)
 
         return self.dstate
