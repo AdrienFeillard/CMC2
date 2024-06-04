@@ -19,6 +19,9 @@ def exercise3():
         compute_metrics=3,
         return_network=True,
         I=10,  # default parameter, adjust as needed
+        video_record=True,  # Enable video recording
+        video_name="exercise3_simulation",  # Name of the video file
+        video_fps=30  # Frames per second
     )
 
     pylog.info("Running the simulation")
