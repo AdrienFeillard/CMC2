@@ -172,11 +172,10 @@ class FiringRateController:
         # CPG dynamics
         input_left = self.pars.I - self.pars.b * state[self.left_a]
         input_right = self.pars.I - self.pars.b * state[self.right_a]
-
         self.dstate[self.left_v] = (-state[self.left_v] + np.maximum(
-            input_left - self.pars.w_inh * W_in.dot(state[self.right_v]), 0)) / self.pars.tau
+            input_left - self.pars.w_inh * np.multiply(W_in.dot(np.ones(state[self.right_v].shape)).reshape(1,-1), state[self.right_v]), 0)) / self.pars.tau
         self.dstate[self.right_v] = (-state[self.right_v] + np.maximum(
-            input_right - self.pars.w_inh * W_in.dot(state[self.left_v]), 0)) / self.pars.tau
+            input_right - self.pars.w_inh * np.multiply(W_in.dot(np.ones(state[self.left_v].shape)).reshape(1,-1), state[self.left_v]), 0)) / self.pars.tau
 
         # Muscle dynamics
         self.dstate[self.left_m] = (self.pars.w_V2a2muscle * W_mc.dot(state[self.left_v]) * (1 - state[self.left_m]) / self.pars.taum_a \
