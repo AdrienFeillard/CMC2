@@ -9,10 +9,7 @@ import farms_pylog as pylog
 class FiringRateController:
     """zebrafish controller"""
 
-    def __init__(
-            self,
-            pars
-    ):
+    def __init__(self, pars):
         super().__init__()
 
         self.n_iterations = pars.n_iterations
@@ -21,8 +18,7 @@ class FiringRateController:
         self.timestep = pars.timestep
         self.times = np.linspace(
             0,
-            self.n_iterations *
-            self.timestep,
+            self.n_iterations * self.timestep,
             self.n_iterations)
         self.pars = pars
 
@@ -138,8 +134,8 @@ class FiringRateController:
         return np.ravel(np.column_stack((left_muscles, right_muscles)))
 
     def ode_rhs(self, _time, state, pos=None):
-        """Network_ODE
-        You should implement here the right hand side of the system of equations
+        """Network_ODE without feedback for Exercise 3
+        You should implement here the right hand side of the system of equations without feedback terms
         Parameters
         ----------
         _time: <float>
@@ -153,7 +149,6 @@ class FiringRateController:
         """
         # Connectivity matrices
         W_in = np.zeros((self.n_neurons, self.n_neurons))
-        W_ss = np.zeros((self.n_neurons, self.n_neurons))
         W_mc = np.zeros((self.n_muscle_cells, self.n_neurons))
 
         # Fill in W_in (CPG to CPG connections)
@@ -164,12 +159,6 @@ class FiringRateController:
                 elif i > j and i - j <= self.pars.n_desc:
                     W_in[i, j] = 1 / (i - j + 1)
 
-        # Fill in W_ss (stretch to CPG connections)
-        for i in range(50):
-            for j in range(50):
-                if i <= j and j - i <= self.pars.n_asc_str:
-                    W_ss[i, j] = 1 / (j - i + 1)
-
         # Fill in W_mc (CPG to muscle cell connections)
         for i in range(self.n_muscle_cells):
             for j in range(self.n_neurons):
@@ -177,30 +166,22 @@ class FiringRateController:
                     W_mc[i, j] = 1
 
         # Adaptation dynamics
-        self.dstate[self.left_a] = -state[self.left_a] + self.pars.gamma * state[self.left_v]
-        self.dstate[self.right_a] = -state[self.right_a] + self.pars.gamma * state[self.right_v]
-
-        # Sensory dynamics
-        if pos is not None:
-            theta = CubicSpline(self.poses, pos)(self.poses_ext)
-            self.dstate[self.left_s] = self.pars.tau_str * (
-                    np.maximum(theta, 0) * (1 - state[self.left_s]) - state[self.left_s])
-            self.dstate[self.right_s] = self.pars.tau_str * (
-                    np.maximum(-theta, 0) * (1 - state[self.right_s]) - state[self.right_s])
+        self.dstate[self.left_a] = (-state[self.left_a] + self.pars.gamma * state[self.left_v]) / self.pars.taua
+        self.dstate[self.right_a] = (-state[self.right_a] + self.pars.gamma * state[self.right_v]) / self.pars.taua
 
         # CPG dynamics
         input_left = self.pars.I - self.pars.b * state[self.left_a]
         input_right = self.pars.I - self.pars.b * state[self.right_a]
 
-        self.dstate[self.left_v] = -state[self.left_v] + np.maximum(
-            input_left - self.pars.w_inh * W_in.dot(state[self.right_v]) - self.pars.w_stretch * W_ss.dot(state[self.right_s]), 0)
-        self.dstate[self.right_v] = -state[self.right_v] + np.maximum(
-            input_right - self.pars.w_inh * W_in.dot(state[self.left_v]) - self.pars.w_stretch * W_ss.dot(state[self.left_s]), 0)
+        self.dstate[self.left_v] = (-state[self.left_v] + np.maximum(
+            input_left - self.pars.w_inh * W_in.dot(state[self.right_v]), 0)) / self.pars.tau
+        self.dstate[self.right_v] = (-state[self.right_v] + np.maximum(
+            input_right - self.pars.w_inh * W_in.dot(state[self.left_v]), 0)) / self.pars.tau
 
         # Muscle dynamics
-        self.dstate[self.left_m] = self.pars.w_V2a2muscle * W_mc.dot(state[self.left_v]) * (1 - state[self.left_m]) / self.pars.taum_a \
-                                   - state[self.left_m] / self.pars.taum_d
-        self.dstate[self.right_m] = self.pars.w_V2a2muscle * W_mc.dot(state[self.right_v]) * (1 - state[self.right_m]) / self.pars.taum_a \
-                                    - state[self.right_m] / self.pars.taum_d
+        self.dstate[self.left_m] = (self.pars.w_V2a2muscle * W_mc.dot(state[self.left_v]) * (1 - state[self.left_m]) / self.pars.taum_a \
+                                    - state[self.left_m] / self.pars.taum_d)
+        self.dstate[self.right_m] = (self.pars.w_V2a2muscle * W_mc.dot(state[self.right_v]) * (1 - state[self.right_m]) / self.pars.taum_a \
+                                     - state[self.right_m] / self.pars.taum_d)
 
         return self.dstate
