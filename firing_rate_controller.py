@@ -187,10 +187,8 @@ class FiringRateController:
         # Sensory dynamics
         if pos is not None:
             theta = CubicSpline(self.poses, pos)(self.poses_ext)
-            self.dstate[self.left_s] = self.pars.tau_str * (
-                    np.maximum(theta, 0) * (1 - state[self.left_s]) - state[self.left_s])
-            self.dstate[self.right_s] = self.pars.tau_str * (
-                    np.maximum(-theta, 0) * (1 - state[self.right_s]) - state[self.right_s])
+            self.dstate[self.left_s] = (np.sqrt(np.maximum(theta, 0)) * (1 - state[self.left_s]) - state[self.left_s])/self.pars.tau_str
+            self.dstate[self.right_s] = (np.sqrt(np.maximum(-theta, 0)) * (1 - state[self.right_s]) - state[self.right_s])/self.pars.tau_str
 
         # CPG dynamics
         input_left = self.pars.I - self.pars.b * state[self.left_a]
