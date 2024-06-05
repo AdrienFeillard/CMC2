@@ -13,6 +13,7 @@ def exercise5():
     log_path = './logs/exercise5/'
     os.makedirs(log_path, exist_ok=True)
 
+    # List of SimulationParameters with varying Idiff
     params_list = [
         SimulationParameters(
             controller="firing_rate",  # Ensure we're using the firing rate controller
@@ -21,21 +22,23 @@ def exercise5():
             compute_metrics=3,
             return_network=True,
             Idiff=Idiff,  # Varying Idiff
-            video_record=True,  # Enable video recording
+            video_record=False,  # Disable video recording
             video_name=f"exercise5_simulation_{i}",  # Name of the video file
             video_fps=30  # Frames per second
         ) for i, Idiff in enumerate(np.linspace(0, 4, num=10))
     ]
 
     pylog.info("Running multiple simulations")
-    controllers = run_multiple(params_list)
+    controllers = run_multiple(params_list, num_process=1)
 
     pylog.info("Simulations finished")
 
     pylog.info("Plotting the results")
 
     for i, controller in enumerate(controllers):
-        plt.figure(f'muscle_activities_{i}')
+        Idiff = params_list[i].Idiff  # Get the Idiff value for the current simulation
+
+        plt.figure(f'muscle_activities_{Idiff}')
         plot_left_right(
             controller.times,
             controller.state,
@@ -44,15 +47,19 @@ def exercise5():
             cm="green",
             offset=0.1
         )
+        plt.savefig(f'{log_path}/muscle_activities_Idiff_{Idiff}.png')  # Save the figure
+        plt.close()
 
         if hasattr(controller, 'links_positions'):
-            plt.figure(f"trajectory_{i}")
+            plt.figure(f"trajectory_{Idiff}")
             plot_trajectory(controller)
+            plt.savefig(f'{log_path}/trajectory_Idiff_{Idiff}.png')  # Save the figure
+            plt.close()
         else:
             pylog.warning(f"Controller {i} does not have attribute 'links_positions'. Cannot plot trajectory.")
 
         if hasattr(controller, 'joints_positions'):
-            plt.figure(f"joint_positions_{i}")
+            plt.figure(f"joint_positions_{Idiff}")
             plot_time_histories(
                 controller.times,
                 controller.joints_positions,
@@ -61,10 +68,12 @@ def exercise5():
                 ylabel="joint positions",
                 lw=1
             )
+            plt.savefig(f'{log_path}/joint_positions_Idiff_{Idiff}.png')  # Save the figure
+            plt.close()
         else:
             pylog.warning(f"Controller {i} does not have attribute 'joints_positions'. Cannot plot joint positions.")
 
-    plt.show()
+    pylog.info("Plots saved successfully")
 
 if __name__ == '__main__':
     exercise5()

@@ -4,7 +4,7 @@ import os
 import farms_pylog as pylog
 import matplotlib.pyplot as plt
 from plotting_common import plot_left_right, plot_trajectory, plot_time_histories
-
+import numpy as np
 def exercise3():
 
     pylog.info("Ex 3")
@@ -19,7 +19,8 @@ def exercise3():
         compute_metrics=3,
         return_network=True,
         I=10,  # default parameter, adjust as needed
-        video_record=True,  # Enable video recording
+        w_stretch=2,
+        video_record=False,  # Enable video recording
         video_name="exercise3_simulation",  # Name of the video file
         video_fps=30  # Frames per second
     )
@@ -41,7 +42,10 @@ def exercise3():
         cm="green",
         offset=0.1
     )
-
+    """    print("left muscle :",controller.muscle_l)
+    print("States",controller.state.shape)
+    print("right muscle:", controller.muscle_r)
+    print(controller.state[:,controller.muscle_r])"""
     # Plotting trajectory
     if hasattr(controller, 'links_positions'):
         plt.figure("trajectory")
@@ -64,6 +68,7 @@ def exercise3():
         pylog.warning("Controller does not have attribute 'joints_positions'. Cannot plot joint positions.")
 
     plt.show()
+
 
 if __name__ == '__main__':
     exercise3()

@@ -1,5 +1,5 @@
 from simulation_parameters import SimulationParameters
-from util.run_closed_loop import run_single
+from util.run_closed_loop import run_multiple
 import numpy as np
 import farms_pylog as pylog
 import os
@@ -13,55 +13,66 @@ def exercise6():
     log_path = './logs/exercise6/'
     os.makedirs(log_path, exist_ok=True)
 
-    params = SimulationParameters(
-        controller="firing_rate",  # Ensure we're using the firing rate controller
-        n_iterations=5001,
-        log_path=log_path,
-        compute_metrics=3,
-        return_network=True,
-        gss=5,  # Example feedback weight
-        video_record=True,  # Enable video recording
-        video_name="exercise6_simulation",  # Name of the video file
-        video_fps=30  # Frames per second
-    )
+    params_list = [
+        SimulationParameters(
+            controller="firing_rate",  # Ensure we're using the firing rate controller
+            n_iterations=5001,
+            log_path=log_path,
+            compute_metrics=3,
+            return_network=True,
+            w_stretch=w_stretch,  # Varying w_stretch
+            video_record=False,  # Disable video recording
+            video_name=f"exercise6_simulation_{i}",  # Name of the video file
+            video_fps=30  # Frames per second
+        ) for i, w_stretch in enumerate(np.linspace(0, 10, num=10))
+    ]
 
-    pylog.info("Running the simulation")
-    controller = run_single(params)
+    pylog.info("Running multiple simulations")
+    controllers = run_multiple(params_list, num_process=1)
 
-    pylog.info("Simulation finished")
+    pylog.info("Simulations finished")
 
     pylog.info("Plotting the results")
 
-    plt.figure('muscle_activities')
-    plot_left_right(
-        controller.times,
-        controller.state,
-        controller.muscle_l,
-        controller.muscle_r,
-        cm="green",
-        offset=0.1
-    )
+    for i, controller in enumerate(controllers):
+        w_stretch = params_list[i].w_stretch  # Get the w_stretch value for the current simulation
 
-    if hasattr(controller, 'links_positions'):
-        plt.figure("trajectory")
-        plot_trajectory(controller)
-    else:
-        pylog.warning("Controller does not have attribute 'links_positions'. Cannot plot trajectory.")
-
-    if hasattr(controller, 'joints_positions'):
-        plt.figure("joint_positions")
-        plot_time_histories(
+        plt.figure(f'muscle_activities_w_stretch_{w_stretch:.2f}')
+        plot_left_right(
             controller.times,
-            controller.joints_positions,
-            offset=-0.4,
-            colors="green",
-            ylabel="joint positions",
-            lw=1
+            controller.state,
+            controller.muscle_l,
+            controller.muscle_r,
+            cm="green",
+            offset=0.1
         )
-    else:
-        pylog.warning("Controller does not have attribute 'joints_positions'. Cannot plot joint positions.")
+        plt.savefig(f'{log_path}/muscle_activities_w_stretch_{w_stretch:.2f}.png')  # Save the figure
+        plt.close()
 
-    plt.show()
+        if hasattr(controller, 'links_positions'):
+            plt.figure(f"trajectory_w_stretch_{w_stretch:.2f}")
+            plot_trajectory(controller)
+            plt.savefig(f'{log_path}/trajectory_w_stretch_{w_stretch:.2f}.png')  # Save the figure
+            plt.close()
+        else:
+            pylog.warning("Controller does not have attribute 'links_positions'. Cannot plot trajectory.")
+
+        if hasattr(controller, 'joints_positions'):
+            plt.figure(f"joint_positions_w_stretch_{w_stretch:.2f}")
+            plot_time_histories(
+                controller.times,
+                controller.joints_positions,
+                offset=-0.4,
+                colors="green",
+                ylabel="joint positions",
+                lw=1
+            )
+            plt.savefig(f'{log_path}/joint_positions_w_stretch_{w_stretch:.2f}.png')  # Save the figure
+            plt.close()
+        else:
+            pylog.warning("Controller does not have attribute 'joints_positions'. Cannot plot joint positions.")
+
+    pylog.info("Plots saved successfully")
 
 if __name__ == '__main__':
     exercise6()

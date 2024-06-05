@@ -11,7 +11,6 @@ class FiringRateController:
 
     def __init__(self, pars):
         super().__init__()
-
         self.n_iterations = pars.n_iterations
         self.n_neurons = pars.n_neurons
         self.n_muscle_cells = pars.n_muscle_cells
@@ -21,7 +20,9 @@ class FiringRateController:
             self.n_iterations * self.timestep,
             self.n_iterations)
         self.pars = pars
-
+        print("I value",self.pars.I)
+        print("Idiff value",self.pars.Idiff)
+        print("w_stretch",self.pars.w_stretch)
         self.n_eq = self.n_neurons*4 + self.n_muscle_cells*2 + self.n_neurons * 2  # number of equations: number of CPG eq+muscle cells eq+sensors eq
         self.muscle_l = 4*self.n_neurons + 2 * np.arange(0, self.n_muscle_cells)  # muscle cells left indexes
         self.muscle_r = self.muscle_l+1  # muscle cells right indexes

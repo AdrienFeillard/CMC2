@@ -61,7 +61,7 @@ class SimulationParameters:
         self.act_strength = 0.3
 
         # CPG pars
-        self.I = 20  # connstant input
+        self.I = 10  # connstant input
         self.Idiff = 0.  # left-right input difference
         self.n_asc = 1  # number of ascending CPG connections
         self.n_desc = 2  # number of descending CPG connections

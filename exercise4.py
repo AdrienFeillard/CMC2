@@ -21,14 +21,14 @@ def exercise4():
             compute_metrics=3,
             return_network=True,
             I=I,  # Varying I
-            video_record=True,  # Enable video recording
+            video_record=False,  # Enable video recording
             video_name=f"exercise4_simulation_{i}",  # Name of the video file
             video_fps=30  # Frames per second
         ) for i, I in enumerate(np.linspace(0, 30, num=10))
     ]
 
     pylog.info("Running multiple simulations")
-    controllers = run_multiple(params_list)
+    controllers = run_multiple(params_list,num_process=1)
 
     pylog.info("Simulations finished")
 

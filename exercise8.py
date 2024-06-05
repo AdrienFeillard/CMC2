@@ -22,7 +22,7 @@ def exercise8():
             return_network=True,
             noise_sigma=sigma,  # Varying noise sigma
             gss=gss,  # Varying feedback weight
-            video_record=True,  # Enable video recording
+            video_record=False,  # Enable video recording
             video_name=f"exercise8_simulation_sigma_{sigma}_gss_{gss}",  # Name of the video file
             video_fps=30  # Frames per second
         ) for sigma in np.linspace(0, 30, num=5) for gss in np.linspace(0, 10, num=5)
