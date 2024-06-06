@@ -13,6 +13,8 @@ def exercise6():
     log_path = './logs/exercise6/'
     os.makedirs(log_path, exist_ok=True)
 
+    w_stretch_values = np.linspace(0, 15, num=100)
+
     params_list = [
         SimulationParameters(
             controller="firing_rate",  # Ensure we're using the firing rate controller
@@ -24,19 +26,44 @@ def exercise6():
             video_record=False,  # Disable video recording
             video_name=f"exercise6_simulation_{i}",  # Name of the video file
             video_fps=30  # Frames per second
-        ) for i, w_stretch in enumerate(np.linspace(0, 10, num=10))
+        ) for i, w_stretch in enumerate(w_stretch_values)
     ]
 
     pylog.info("Running multiple simulations")
-    controllers = run_multiple(params_list, num_process=1)
+    controllers = run_multiple(params_list, num_process=10)
 
     pylog.info("Simulations finished")
+
+    # Initialize lists to store metrics
+    frequency_values = []
+    wavefrequency_values = []
+    forward_speed_values = []
 
     pylog.info("Plotting the results")
 
     for i, controller in enumerate(controllers):
         w_stretch = params_list[i].w_stretch  # Get the w_stretch value for the current simulation
 
+        # Retrieve metrics
+        metrics = controller.metrics
+        frequency_values.append(metrics['frequency'])
+        wavefrequency_values.append(metrics['wavefrequency'])
+        forward_speed_values.append(metrics['fspeed_PCA'])
+
+        # Plot CPG activities
+        plt.figure(f'CPG_activities_w_stretch_{w_stretch:.2f}')
+        plot_left_right(
+            controller.times,
+            controller.state,
+            controller.left_v,
+            controller.right_v,
+            cm="green",
+            offset=0.1
+        )
+        plt.savefig(f'{log_path}/CPG_activities_w_stretch_{w_stretch:.2f}.png')
+        plt.close()
+
+        # Plot muscle neuron activities
         plt.figure(f'muscle_activities_w_stretch_{w_stretch:.2f}')
         plot_left_right(
             controller.times,
@@ -46,17 +73,45 @@ def exercise6():
             cm="green",
             offset=0.1
         )
-        plt.savefig(f'{log_path}/muscle_activities_w_stretch_{w_stretch:.2f}.png')  # Save the figure
+        plt.savefig(f'{log_path}/muscle_activities_w_stretch_{w_stretch:.2f}.png')
         plt.close()
 
+        # Plot muscle neuron activities
+        plt.figure(f'muscle_activities_w_stretch_2_{w_stretch:.2f}')
+        plot_left_right(
+            controller.times,
+            controller.state,
+            controller.muscle_l,
+            controller.muscle_r,
+            cm="green",
+            offset=0.1
+        )
+        plt.savefig(f'{log_path}/muscle_activities_w_stretch_2_{w_stretch:.2f}.png')
+        plt.close()
+
+        # Plot sensory feedback activities
+        plt.figure(f'sensory_feedback_activities_w_stretch_{w_stretch:.2f}')
+        plot_left_right(
+            controller.times,
+            controller.state,
+            controller.left_s,
+            controller.right_s,
+            cm="green",
+            offset=0.1
+        )
+        plt.savefig(f'{log_path}/sensory_feedback_activities_w_stretch_{w_stretch:.2f}.png')
+        plt.close()
+
+        # Plot trajectory
         if hasattr(controller, 'links_positions'):
             plt.figure(f"trajectory_w_stretch_{w_stretch:.2f}")
             plot_trajectory(controller)
-            plt.savefig(f'{log_path}/trajectory_w_stretch_{w_stretch:.2f}.png')  # Save the figure
+            plt.savefig(f'{log_path}/trajectory_w_stretch_{w_stretch:.2f}.png')
             plt.close()
         else:
-            pylog.warning("Controller does not have attribute 'links_positions'. Cannot plot trajectory.")
+            pylog.warning(f"Controller {i} does not have attribute 'links_positions'. Cannot plot trajectory.")
 
+        # Plot joint positions
         if hasattr(controller, 'joints_positions'):
             plt.figure(f"joint_positions_w_stretch_{w_stretch:.2f}")
             plot_time_histories(
@@ -67,10 +122,40 @@ def exercise6():
                 ylabel="joint positions",
                 lw=1
             )
-            plt.savefig(f'{log_path}/joint_positions_w_stretch_{w_stretch:.2f}.png')  # Save the figure
+            plt.savefig(f'{log_path}/joint_positions_w_stretch_{w_stretch:.2f}.png')
             plt.close()
         else:
-            pylog.warning("Controller does not have attribute 'joints_positions'. Cannot plot joint positions.")
+            pylog.warning(f"Controller {i} does not have attribute 'joints_positions'. Cannot plot joint positions.")
+
+    # Plotting frequency as a function of w_stretch
+    plt.figure('frequency_vs_w_stretch')
+    plt.plot(w_stretch_values, frequency_values, marker='o')
+    plt.xlabel('w_stretch')
+    plt.ylabel('Frequency')
+    plt.title('Frequency vs w_stretch')
+    plt.grid(True)
+    plt.savefig(f'{log_path}/frequency_vs_w_stretch.png')
+    plt.close()
+
+    # Plotting wavefrequency as a function of w_stretch
+    plt.figure('wavefrequency_vs_w_stretch')
+    plt.plot(w_stretch_values, wavefrequency_values, marker='o')
+    plt.xlabel('w_stretch')
+    plt.ylabel('Wave Frequency')
+    plt.title('Wave Frequency vs w_stretch')
+    plt.grid(True)
+    plt.savefig(f'{log_path}/wavefrequency_vs_w_stretch.png')
+    plt.close()
+
+    # Plotting forward speed as a function of w_stretch
+    plt.figure('forward_speed_vs_w_stretch')
+    plt.plot(w_stretch_values, forward_speed_values, marker='o')
+    plt.xlabel('w_stretch')
+    plt.ylabel('Forward Speed')
+    plt.title('Forward Speed vs w_stretch')
+    plt.grid(True)
+    plt.savefig(f'{log_path}/forward_speed_vs_w_stretch.png')
+    plt.close()
 
     pylog.info("Plots saved successfully")
 
