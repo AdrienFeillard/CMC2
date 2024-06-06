@@ -5,6 +5,7 @@ import farms_pylog as pylog
 import matplotlib.pyplot as plt
 from plotting_common import plot_left_right, plot_trajectory, plot_time_histories
 import numpy as np
+
 def exercise3():
 
     pylog.info("Ex 3")
@@ -19,8 +20,8 @@ def exercise3():
         compute_metrics=3,
         return_network=True,
         I=10,  # default parameter, adjust as needed
-        w_stretch=2,
-        video_record=False,  # Enable video recording
+        w_stretch=0,
+        video_record=False,  # Disable video recording
         video_name="exercise3_simulation",  # Name of the video file
         video_fps=30  # Frames per second
     )
@@ -42,14 +43,41 @@ def exercise3():
         cm="green",
         offset=0.1
     )
-    """    print("left muscle :",controller.muscle_l)
-    print("States",controller.state.shape)
-    print("right muscle:", controller.muscle_r)
-    print(controller.state[:,controller.muscle_r])"""
+    plt.savefig(f'{log_path}/muscle_activities_3.png')
+    plt.close()
+
+    # Plotting CPG activities
+    plt.figure('CPG_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_v,
+        controller.right_v,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/CPG_activities_3.png')
+    plt.close()
+
+    # Plotting Muscle Cell (MC) activities
+    plt.figure('MC_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_m,
+        controller.right_m,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/MC_activities_3.png')
+    plt.close()
+
     # Plotting trajectory
     if hasattr(controller, 'links_positions'):
         plt.figure("trajectory")
         plot_trajectory(controller)
+        plt.savefig(f'{log_path}/trajectory_3.png')
+        plt.close()
     else:
         pylog.warning("Controller does not have attribute 'links_positions'. Cannot plot trajectory.")
 
@@ -64,11 +92,12 @@ def exercise3():
             ylabel="joint positions",
             lw=1
         )
+        plt.savefig(f'{log_path}/joint_positions_3.png')
+        plt.close()
     else:
         pylog.warning("Controller does not have attribute 'joints_positions'. Cannot plot joint positions.")
 
-    plt.show()
-
+    pylog.info("Plots saved successfully")
 
 if __name__ == '__main__':
     exercise3()
