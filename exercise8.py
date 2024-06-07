@@ -12,8 +12,8 @@ def exercise8():
     log_path = './logs/exercise8/'
     os.makedirs(log_path, exist_ok=True)
 
-    sigma_values = np.linspace(0, 30, num=10)
-    w_stretch_values = np.linspace(0, 10, num=10)
+    sigma_values = np.round(np.linspace(0, 30, num=10),1)
+    w_stretch_values = np.round(np.linspace(0, 10, num=10),1)
 
     params_list = [
         SimulationParameters(
@@ -25,7 +25,6 @@ def exercise8():
             return_network=True,
             noise_sigma=sigma,  # Varying noise level
             theta=0.1,
-            n_desc_str = 2,
             w_stretch=w_stretch,  # Varying feedback strength
             video_record=False,
             video_name=f"exercise8_simulation_sigma_{sigma}_w_stretch_{w_stretch}",
@@ -34,7 +33,7 @@ def exercise8():
     ]
 
     pylog.info("Running multiple simulations")
-    controllers = run_multiple(params_list, num_process=1)
+    controllers = run_multiple(params_list, num_process=10)
 
     pylog.info("Simulations finished")
 
@@ -42,7 +41,7 @@ def exercise8():
     frequency_matrix = np.zeros((len(sigma_values), len(w_stretch_values)))
     wavefrequency_matrix = np.zeros((len(sigma_values), len(w_stretch_values)))
     forward_speed_matrix = np.zeros((len(sigma_values), len(w_stretch_values)))
-
+    ptcc_values_matrix = np.zeros((len(sigma_values), len(w_stretch_values)))
     for idx, controller in enumerate(controllers):
         sigma = params_list[idx].noise_sigma
         w_stretch = params_list[idx].w_stretch
@@ -53,29 +52,38 @@ def exercise8():
         frequency_matrix[i, j] = metrics['frequency']
         wavefrequency_matrix[i, j] = metrics['wavefrequency']
         forward_speed_matrix[i, j] = metrics['fspeed_PCA']
+        ptcc_values_matrix[i,j] = metrics['ptcc']
 
     # Plotting heatmaps for the metrics
-    plt.figure('Heatmap: Frequency vs sigma and w_stretch')
-    sns.heatmap(frequency_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=True, cmap='viridis')
-    plt.xlabel('w_stretch')
-    plt.ylabel('sigma')
-    plt.title('Heatmap: Frequency vs sigma and w_stretch')
+    plt.figure('Frequency vs sigma and gss')
+    sns.heatmap(frequency_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=False, cmap='viridis')
+    plt.xlabel('gss Value')
+    plt.ylabel('sigma Value')
+    plt.title('Frequency vs sigma and gss')
     plt.savefig(f'{log_path}/heatmap_frequency_vs_sigma_w_stretch.png')
     plt.close()
 
-    plt.figure('Heatmap: Wave Frequency vs sigma and w_stretch')
-    sns.heatmap(wavefrequency_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=True, cmap='viridis')
-    plt.xlabel('w_stretch')
-    plt.ylabel('sigma')
-    plt.title('Heatmap: Wave Frequency vs sigma and w_stretch')
+    plt.figure('ptcc vs sigma and gss')
+    sns.heatmap(ptcc_values_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=False, cmap='viridis')
+    plt.xlabel('gss Value')
+    plt.ylabel('sigma Value')
+    plt.title('ptcc vs sigma and gss')
+    plt.savefig(f'{log_path}/heatmap_ptcc_vs_sigma_w_stretch.png')
+    plt.close()
+
+    plt.figure('Wave Frequency vs sigma and gss')
+    sns.heatmap(wavefrequency_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=False, cmap='viridis')
+    plt.xlabel('gss Value')
+    plt.ylabel('sigma Value')
+    plt.title('Wave Frequency vs sigma and gss')
     plt.savefig(f'{log_path}/heatmap_wavefrequency_vs_sigma_w_stretch.png')
     plt.close()
 
-    plt.figure('Heatmap: Forward Speed vs sigma and w_stretch')
-    sns.heatmap(forward_speed_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=True, cmap='viridis')
-    plt.xlabel('w_stretch')
-    plt.ylabel('sigma')
-    plt.title('Heatmap: Forward Speed vs sigma and w_stretch')
+    plt.figure('Forward Speed vs sigma and gss')
+    sns.heatmap(forward_speed_matrix, xticklabels=w_stretch_values, yticklabels=sigma_values, annot=False, cmap='viridis')
+    plt.xlabel('gss Value')
+    plt.ylabel('sigma Value')
+    plt.title('Forward Speed vs sigma and gss')
     plt.savefig(f'{log_path}/heatmap_forward_speed_vs_sigma_w_stretch.png')
     plt.close()
 

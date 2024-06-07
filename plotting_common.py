@@ -342,7 +342,7 @@ def plot_center_of_mass_trajectory_with_circle(controller, label=None, color=Non
     plt.ylabel('y [m]')
     plt.axis('equal')
     plt.grid(True)
-    plt.title('Center of Mass Trajectory with Osculating Circle')
+    plt.title('Center of Mass Trajectory with Oscillating Circle')
     if label is not None:
         plt.legend()
 

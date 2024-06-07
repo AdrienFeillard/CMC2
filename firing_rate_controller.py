@@ -89,9 +89,10 @@ class FiringRateController:
             The solution x_t{n+1} of the Euler Maruyama scheme
             x_new = -0.1*x_prev*dt+sigma*sqrt(dt)*Wiener
         """
-        dw = np.sqrt(timestep) * np.random.randn(*x_prev.shape)
+        dw = np.random.randn(*x_prev.shape)
+
         dx_process = -self.pars.theta * x_prev * timestep + sigma * dw * np.sqrt(timestep)
-        return x_prev + dx_process
+        return dx_process
 
     def step_euler(self, iteration, time, timestep, pos=None):
         """Euler step"""
@@ -106,15 +107,22 @@ class FiringRateController:
 
     def step_euler_maruyama(self, iteration, time, timestep, pos=None):
         """Euler Maruyama step"""
-        self.state[iteration + 1, :] = self.state[iteration, :] + timestep * self.f(time, self.state[iteration], pos=pos)
-        self.noise_vec = self.get_ou_noise_process_dw(timestep, self.noise_vec, self.pars.noise_sigma)
-        self.state[iteration + 1, list(self.left_v) + list(self.right_v)] += self.noise_vec
-        self.state[iteration + 1, self.all_muscles] = np.maximum(self.state[iteration + 1, self.all_muscles], 0)  # prevent from negative muscle activations
+        self.state[iteration+1, :] = self.state[iteration, :] + \
+                                     timestep*self.f(time, self.state[iteration], pos=pos)
+        self.noise_vec = self.get_ou_noise_process_dw(
+            timestep, self.noise_vec, self.pars.noise_sigma)
+        self.state[iteration+1, self.left_v] += self.noise_vec[self.left_v]
+        self.state[iteration+1, self.right_v] += self.noise_vec[self.right_v]
+        self.state[iteration+1,
+        self.all_muscles] = np.maximum(self.state[iteration+1,
+        self.all_muscles],
+                                       0)  # prevent from negative muscle activations
         return np.concatenate([
             self.zeros8,  # the first 4 passive joints
             self.motor_output(iteration),  # the active joints
             self.zeros2  # the last (tail) passive joint
         ])
+
 
     def motor_output(self, iteration):
         """
