@@ -1,10 +1,13 @@
 from simulation_parameters import SimulationParameters
 from util.run_closed_loop import run_multiple
+from util.run_closed_loop import run_single
 import numpy as np
 import farms_pylog as pylog
 import os
 import matplotlib.pyplot as plt
-from plotting_common import plot_left_right, plot_trajectory, plot_time_histories
+from plotting_common import plot_left_right, plot_trajectory, plot_time_histories ,plot_center_of_mass_trajectory_with_circle
+
+
 
 def exercise5():
 
@@ -52,43 +55,6 @@ def exercise5():
         radius = 1 / metrics['curvature'] if metrics['curvature'] != 0 else np.inf
         radii.append(radius)
 
-        # Plot muscle activities
-        plt.figure(f'muscle_activities_{Idiff}')
-        plot_left_right(
-            controller.times,
-            controller.state,
-            controller.muscle_l,
-            controller.muscle_r,
-            cm="green",
-            offset=0.1
-        )
-        plt.savefig(f'{log_path}/muscle_activities_Idiff_{Idiff}.png')  # Save the figure
-        plt.close()
-
-        # Plot trajectory
-        if hasattr(controller, 'links_positions'):
-            plt.figure(f"trajectory_{Idiff}")
-            plot_trajectory(controller)
-            plt.savefig(f'{log_path}/trajectory_Idiff_{Idiff}.png')  # Save the figure
-            plt.close()
-        else:
-            pylog.warning(f"Controller {i} does not have attribute 'links_positions'. Cannot plot trajectory.")
-
-        # Plot joint positions
-        if hasattr(controller, 'joints_positions'):
-            plt.figure(f"joint_positions_{Idiff}")
-            plot_time_histories(
-                controller.times,
-                controller.joints_positions,
-                offset=-0.4,
-                colors="green",
-                ylabel="joint positions",
-                lw=1
-            )
-            plt.savefig(f'{log_path}/joint_positions_Idiff_{Idiff}.png')  # Save the figure
-            plt.close()
-        else:
-            pylog.warning(f"Controller {i} does not have attribute 'joints_positions'. Cannot plot joint positions.")
 
     # Plotting curvature as a function of Idiff
     plt.figure('curvature_vs_Idiff')
@@ -122,5 +88,93 @@ def exercise5():
 
     pylog.info("Plots saved successfully")
 
+def exercise5b(**kwargs): 
+    pylog.info("Ex 5")
+    pylog.info("Implement exercise 5")
+    log_path = './logs/exercise5/'
+    os.makedirs(log_path, exist_ok=True)
+
+    Idif = 2
+
+    # List of SimulationParameters with varying Idiff
+    all_pars = SimulationParameters(
+            controller="firing_rate",  # Ensure we're using the firing rate controller
+            n_iterations=4001,
+            log_path=log_path,
+            compute_metrics=3,
+            return_network=True,
+            Idiff=Idif,  # Varying Idiff
+            video_record=False,  # Disable video recording
+            video_name=f"exercise5_simulation",  # Name of the video file
+            video_fps=30 , # Frames per second
+            **kwargs
+        ) 
+    
+
+    pylog.info("Running the simulation")
+    controller = run_single(
+        all_pars
+    )
+
+    pylog.info("Plotting the result")
+
+    # Plotting muscle activities
+    plt.figure('muscle_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.muscle_l,
+        controller.muscle_r,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/muscle_activities_3.png')
+    plt.close()
+
+    # Plotting CPG activities
+    plt.figure('CPG_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_v,
+        controller.right_v,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/CPG_activities_5.png')
+    plt.close()
+
+    # Plotting Muscle Cell (MC) activities
+    plt.figure('MC_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_m,
+        controller.right_m,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/MC_activities_5.png')
+    plt.close()
+
+    metrics = controller.metrics
+    radius = 1 / metrics['curvature'] if metrics['curvature'] != 0 else np.inf
+    # Print comparison to ensure it matches the expected turning radius
+    print(f"Computed radius: {radius}")
+
+    # Plot center of mass trajectory
+    plt.figure('Center of Mass trajectory')
+    plot_center_of_mass_trajectory_with_circle(controller, label='Center of Mass', color='blue')
+    plt.show()
+    plt.savefig(f'{log_path}/CenterofMAss.png')
+    plt.close()
+    
+
+
+    
+
+
+
 if __name__ == '__main__':
-    exercise5()
+    #exercise5()
+    exercise5b()

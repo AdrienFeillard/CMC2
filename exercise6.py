@@ -1,10 +1,10 @@
 from simulation_parameters import SimulationParameters
-from util.run_closed_loop import run_multiple
+from util.run_closed_loop import run_multiple , run_single
 import numpy as np
 import farms_pylog as pylog
 import os
 import matplotlib.pyplot as plt
-from plotting_common import plot_left_right, plot_trajectory, plot_time_histories
+from plotting_common import plot_left_right, plot_trajectory, plot_time_histories , plot_time_histories_multiple_windows
 
 def exercise6():
 
@@ -159,5 +159,101 @@ def exercise6():
 
     pylog.info("Plots saved successfully")
 
+def exercise6b(**kwargs): 
+    pylog.info("Ex 6")
+    pylog.info("Implement exercise 6")
+    log_path = './logs/exercise5/'
+    os.makedirs(log_path, exist_ok=True)
+
+    g_ss = 5
+
+    # List of SimulationParameters with varying Idiff
+    all_pars = SimulationParameters(
+            controller="firing_rate",  # Ensure we're using the firing rate controller
+            n_iterations=4001,
+            log_path=log_path,
+            compute_metrics=3,
+            return_network=True,
+            w_stretch =g_ss,  # Varying Idiff
+            video_record=False,  # Disable video recording
+            video_name=f"exercise5_simulation",  # Name of the video file
+            video_fps=30 , # Frames per second
+            **kwargs
+        ) 
+    
+
+    pylog.info("Running the simulation")
+    controller = run_single(
+        all_pars
+    )
+
+    pylog.info("Plotting the result")
+
+    # Plotting muscle activities
+    plt.figure('muscle_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.muscle_l,
+        controller.muscle_r,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/muscle_activities_6.png')
+    plt.close()
+
+    # Plotting CPG activities
+    plt.figure('CPG_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_v,
+        controller.right_v,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/CPG_activities_6.png')
+    plt.close()
+
+    plt.figure('Sensory_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_s,
+        controller.right_s,
+        cm="blue",  
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/Sensory_activities_6.png')
+    plt.close()
+
+    # Plotting Muscle Cell (MC) activities
+    plt.figure('MC_activities')
+    plot_left_right(
+        controller.times,
+        controller.state,
+        controller.left_m,
+        controller.right_m,
+        cm="green",
+        offset=0.1
+    )
+    plt.savefig(f'{log_path}/MC_activities_6.png')
+    plt.close()
+
+    # example plot using plot_time_histories_multiple_windows
+    plt.figure("joint positions_single")
+    plot_time_histories_multiple_windows(
+        controller.times,
+        controller.joints_positions,
+        offset=-0.4,
+        colors="green",
+        ylabel="joint positions",
+        lw=1
+    )
+    plt.savefig(f'{log_path}/Joint_positions_6.png')
+    plt.close()
+
+    
+
 if __name__ == '__main__':
-    exercise6()
+    exercise6b(headless = True)

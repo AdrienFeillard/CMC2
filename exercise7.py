@@ -14,7 +14,7 @@ def exercise7():
     log_path = './logs/exercise7/'
     os.makedirs(log_path, exist_ok=True)
 
-    I_values = np.linspace(0, 30, num=10)
+    Idiff_values = np.linspace(0, 4, num=100)
     w_stretch_values = np.linspace(0, 15, num=10)
 
     params_list = [
@@ -24,12 +24,12 @@ def exercise7():
             log_path=log_path,
             compute_metrics=3,
             return_network=True,
-            I=I,  # Varying I
+            Idiff=Idiff,  # Varying I
             w_stretch=w_stretch,  # Varying feedback weight
             video_record=False,  # Disable video recording
             video_name=f"exercise7_simulation_I_{I}_gss_{w_stretch}",  # Name of the video file
             video_fps=30  # Frames per second
-        ) for I in I_values for w_stretch in w_stretch_values
+        ) for Idiff in Idiff_values for w_stretch in w_stretch_values
     ]
 
     pylog.info("Running multiple simulations")
@@ -38,9 +38,9 @@ def exercise7():
     pylog.info("Simulations finished")
 
     # Initialize arrays to store metrics
-    frequency_values = np.zeros((len(I_values), len(w_stretch_values)))
-    wavefrequency_values = np.zeros((len(I_values), len(w_stretch_values)))
-    forward_speed_values = np.zeros((len(I_values), len(w_stretch_values)))
+    frequency_values = np.zeros((len(Idiff_values), len(w_stretch_values)))
+    wavefrequency_values = np.zeros((len(Idiff_values), len(w_stretch_values)))
+    forward_speed_values = np.zeros((len(Idiff_values), len(w_stretch_values)))
 
     pylog.info("Plotting the results")
 
@@ -50,7 +50,7 @@ def exercise7():
 
         # Retrieve metrics
         metrics = controller.metrics
-        i_idx = np.where(I_values == I)[0][0]
+        i_idx = np.where(Idiff_values == I)[0][0]
         gss_idx = np.where(w_stretch_values == w_stretch)[0][0]
 
         frequency_values[i_idx, gss_idx] = metrics['frequency']
@@ -97,7 +97,7 @@ def exercise7():
 
     # Plotting heatmaps for the metrics
     plt.figure('Heatmap: Frequency vs I and gss')
-    sns.heatmap(frequency_values, xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis')
+    sns.heatmap(frequency_values, xticklabels=w_stretch_values, yticklabels=Idiff_values, annot=True, cmap='viridis')
     plt.xlabel('gss')
     plt.ylabel('I')
     plt.title('Heatmap: Frequency vs I and gss')
@@ -105,7 +105,7 @@ def exercise7():
     plt.close()
 
     plt.figure('Heatmap: Wave Frequency vs I and gss')
-    sns.heatmap(wavefrequency_values, xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis')
+    sns.heatmap(wavefrequency_values, xticklabels=w_stretch_values, yticklabels=Idiff_values, annot=True, cmap='viridis')
     plt.xlabel('gss')
     plt.ylabel('I')
     plt.title('Heatmap: Wave Frequency vs I and gss')
@@ -113,7 +113,7 @@ def exercise7():
     plt.close()
 
     plt.figure('Heatmap: Forward Speed vs I and gss')
-    sns.heatmap(forward_speed_values, xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis')
+    sns.heatmap(forward_speed_values, xticklabels=w_stretch_values, yticklabels=Idiff_values, annot=True, cmap='viridis')
     plt.xlabel('gss')
     plt.ylabel('I')
     plt.title('Heatmap: Forward Speed vs I and gss')

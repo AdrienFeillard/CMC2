@@ -189,8 +189,12 @@ class FiringRateController:
             self.dstate[self.right_s] = (np.sqrt(np.maximum(-theta, 0)) * (1 - state[self.right_s]) - state[self.right_s])/self.pars.tau_str
 
         # CPG dynamics
-        input_left = self.pars.I - self.pars.b * state[self.left_a]
-        input_right = self.pars.I - self.pars.b * state[self.right_a]
+        #input_left = self.pars.I - self.pars.b * state[self.left_a]
+        #input_right = self.pars.I - self.pars.b * state[self.right_a]
+
+        # CPG dynamics with Idiff
+        input_left = self.pars.I +self.pars.Idiff - self.pars.b * state[self.left_a]
+        input_right = self.pars.I - self.pars.Idiff - self.pars.b * state[self.right_a]
 
         self.dstate[self.left_v] = (-state[self.left_v] + np.sqrt(np.maximum(
             input_left - self.pars.w_inh * (W_in @ state[self.right_v]) - self.pars.w_stretch * (W_ss @ state[self.right_s]), 0))) / self.pars.tau
