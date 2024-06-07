@@ -5,7 +5,7 @@ import numpy as np
 import farms_pylog as pylog
 import os
 import matplotlib.pyplot as plt
-from plotting_common import plot_left_right, plot_trajectory, plot_time_histories ,plot_center_of_mass_trajectory_with_circle
+from plotting_common import plot_left_right, plot_time_histories ,plot_center_of_mass_trajectory
 
 
 
@@ -52,57 +52,8 @@ def exercise5():
         lateral_speed_values.append(metrics['lspeed_PCA'])
 
         # Calculate turning radius
-        # Calculate turning radius
-        if Idiff in [0, 1, 2, 3, 4] or True:
-            radius = 1 / metrics['curvature'] if metrics['curvature'] != 0 else np.inf
-            radii.append(radius)
-            print("For Idiff value", Idiff)
-            print(f"Computed radius: {radius}")
-
-            # Plot center of mass trajectory
-            plt.figure('Center of Mass trajectory')
-            plot_center_of_mass_trajectory_with_circle(controller, label='Center of Mass', color='blue')
-            plt.savefig(f'{log_path}/CenterofMAss_{Idiff}.png')
-            plt.close()
-
-            # Plotting muscle activities
-            plt.figure('muscle_activities')
-            plot_left_right(
-                controller.times,
-                controller.state,
-                controller.muscle_l,
-                controller.muscle_r,
-                cm="green",
-                offset=0.1
-            )
-            plt.savefig(f'{log_path}/muscle_activities_3{Idiff}.png')
-            plt.close()
-
-            # Plotting CPG activities
-            plt.figure('CPG_activities')
-            plot_left_right(
-                controller.times,
-                controller.state,
-                controller.left_v,
-                controller.right_v,
-                cm="green",
-                offset=0.1
-            )
-            plt.savefig(f'{log_path}/CPG_activities_5{Idiff}.png')
-            plt.close()
-
-            # Plotting Muscle Cell (MC) activities
-            plt.figure('MC_activities')
-            plot_left_right(
-                controller.times,
-                controller.state,
-                controller.left_m,
-                controller.right_m,
-                cm="green",
-                offset=0.1
-            )
-            plt.savefig(f'{log_path}/MC_activities_5{Idiff}.png')
-            plt.close()
+        radius = 1 / metrics['curvature'] if metrics['curvature'] != 0 else np.inf
+        radii.append(radius)
 
 
     # Plotting curvature as a function of Idiff
@@ -134,7 +85,6 @@ def exercise5():
     plt.grid(True)
     plt.savefig(f'{log_path}/radius_vs_Idiff.png')
     plt.close()
-
 
     pylog.info("Plots saved successfully")
 
@@ -214,7 +164,8 @@ def exercise5b(**kwargs):
 
     # Plot center of mass trajectory
     plt.figure('Center of Mass trajectory')
-    plot_center_of_mass_trajectory_with_circle(controller, label='Center of Mass', color='blue')
+    plot_center_of_mass_trajectory(controller, label='Center of Mass', color='blue')
+    plt.show()
     plt.savefig(f'{log_path}/CenterofMAss.png')
     plt.close()
     
@@ -226,4 +177,4 @@ def exercise5b(**kwargs):
 
 if __name__ == '__main__':
     exercise5()
-    #exercise5b()
+    exercise5b()

@@ -240,64 +240,8 @@ def plot_left_right(times, state, left_idx, right_idx, cm="jet", offset=0.3):
     )
 
 
-def plot_trajectory(controller, label=None, color=None, sim_fraction=1):
 
-    head_positions = np.array(controller.links_positions)[:, 0, :]
-    n_steps = head_positions.shape[0]
-    n_steps_considered = round(n_steps * sim_fraction)
-
-    head_positions = head_positions[-n_steps_considered:, :2]
-
-    """Plot head positions"""
-    plt.plot(head_positions[:-1, 0],
-             head_positions[:-1, 1], label=label, color=color)
-    plt.xlabel('x [m]')
-    plt.ylabel('y [m]')
-    plt.axis('equal')
-    plt.grid(True)
-"""""
-def plot_center_of_mass_trajectory_with_circle(controller, label=None, color=None, sim_fraction=1):
-    link_positions = np.array(controller.links_positions)
-    center_of_mass = compute_center_of_mass(link_positions)
-    n_steps = center_of_mass.shape[0]
-    n_steps_considered = round(n_steps * sim_fraction)
-    center_of_mass = center_of_mass[-n_steps_considered:, :2]
-
-    plt.plot(center_of_mass[:, 0], center_of_mass[:, 1], label='Center of Mass', color='blue')
-    
-    # Compute curvature
-    x = center_of_mass[:, 0]
-    y = center_of_mass[:, 1]
-    metrics = controller.metrics
-    curvature = metrics['curvature'] 
-    
-    # Select a point to plot the osculating circle
-    idx = len(center_of_mass) // 2  # middle point
-    radius = 1 / curvature[idx] if curvature[idx] != 0 else np.inf
-    center_of_mass_point = center_of_mass[idx]
-
-    # Compute the center of the osculating circle
-    dx_dt = np.gradient(x)
-    dy_dt = np.gradient(y)
-    tangent = np.array([dx_dt[idx], dy_dt[idx]])
-    tangent /= np.linalg.norm(tangent)
-    normal = np.array([-tangent[1], tangent[0]])
-    circle_center = center_of_mass_point + radius * normal
-
-    # Plot the osculating circle
-    circle = plt.Circle(circle_center, abs(radius), color='red', fill=False, linestyle='--')
-    plt.gca().add_artist(circle)
-
-    plt.xlabel('x [m]')
-    plt.ylabel('y [m]')
-    plt.axis('equal')
-    plt.grid(True)
-    plt.title('Center of Mass Trajectory with Osculating Circle')
-    if label is not None:
-        plt.legend()
-    plt.show()
-"""
-def plot_center_of_mass_trajectory_with_circle(controller, label=None, color=None, sim_fraction=1):
+def plot_center_of_mass_trajectory(controller, label=None, color=None, sim_fraction=1):
     """
     Plot the trajectory of the center of mass for the given controller along with the osculating circle.
 
@@ -317,32 +261,12 @@ def plot_center_of_mass_trajectory_with_circle(controller, label=None, color=Non
     """Plot center of mass positions"""
     plt.plot(center_of_mass[:-1, 0],
              center_of_mass[:-1, 1], label=label, color=color)
-    
-    # Compute curvature
-    x = center_of_mass[:, 0]
-    y = center_of_mass[:, 1]
-    t = np.linspace(0, len(x) - 1, len(x))
-    metrics = controller.metrics
-    radius = 1 / metrics['curvature'] if metrics['curvature'] != 0 else np.inf
-
-    # Select a point to plot the osculating circle
-    idx = len(center_of_mass) // 2  # middle point
-    center_of_mass_point = center_of_mass[idx]
-
-    # Compute the center of the osculating circle
-    direction = np.array([y[idx] - y[idx-1], -(x[idx] - x[idx-1])])
-    direction = direction / np.linalg.norm(direction)
-    circle_center = center_of_mass_point + radius * direction
-
-    # Plot the osculating circle
-    circle = plt.Circle(circle_center, abs(radius), color='red', fill=False, linestyle='--')
-    plt.gca().add_artist(circle)
 
     plt.xlabel('x [m]')
     plt.ylabel('y [m]')
     plt.axis('equal')
     plt.grid(True)
-    plt.title('Center of Mass Trajectory with Oscillating Circle')
+    plt.title('Center of Mass Trajectory')
     if label is not None:
         plt.legend()
 

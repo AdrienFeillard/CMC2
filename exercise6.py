@@ -4,7 +4,7 @@ import numpy as np
 import farms_pylog as pylog
 import os
 import matplotlib.pyplot as plt
-from plotting_common import plot_left_right, plot_trajectory, plot_time_histories , plot_time_histories_multiple_windows
+from plotting_common import plot_left_right, plot_time_histories , plot_time_histories_multiple_windows , plot_center_of_mass_trajectory
 
 def exercise6():
 
@@ -165,7 +165,7 @@ def exercise6b(**kwargs):
     log_path = './logs/exercise5/'
     os.makedirs(log_path, exist_ok=True)
 
-    g_ss = 5
+    g_ss = 15
 
     # List of SimulationParameters with varying Idiff
     all_pars = SimulationParameters(
@@ -253,7 +253,15 @@ def exercise6b(**kwargs):
     plt.savefig(f'{log_path}/Joint_positions_6.png')
     plt.close()
 
+    # Plot center of mass trajectory
+    plt.figure('Center of Mass trajectory')
+    plot_center_of_mass_trajectory(controller, label='Center of Mass', color='blue')
+    plt.show()
+    plt.savefig(f'{log_path}/CenterofMAss.png')
+    plt.close()
+
     
 
 if __name__ == '__main__':
+    exercise6()
     exercise6b(headless = True)
