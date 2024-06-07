@@ -54,6 +54,7 @@ def exercise7():
     lateral_speed_values = np.zeros((len(Idiff_values), len(I_values), len(w_stretch_values)))
     radii = np.zeros((len(Idiff_values), len(I_values), len(w_stretch_values)))
     total_distance_values = np.zeros((len(Idiff_values), len(I_values), len(w_stretch_values)))
+    ptcc_values = np.zeros((len(Idiff_values), len(I_values), len(w_stretch_values)))  # Add PTCC values array
 
     pylog.info("Plotting the results")
 
@@ -73,6 +74,7 @@ def exercise7():
         forward_speed_values[idiff_idx, I_idx, w_stretch_idx] = metrics['fspeed_PCA']
         curvature_values[idiff_idx, I_idx, w_stretch_idx] = metrics['curvature']
         lateral_speed_values[idiff_idx, I_idx, w_stretch_idx] = metrics['lspeed_PCA']
+        ptcc_values[idiff_idx, I_idx, w_stretch_idx] = metrics['ptcc']
 
         # Calculate turning radius
         radius = 1 / metrics['curvature'] if metrics['curvature'] != 0 else np.inf
@@ -86,6 +88,8 @@ def exercise7():
         else:
             pylog.warning(f"Controller {idx} does not have attribute 'links_positions'. Cannot calculate total distance.")
             total_distance_values[idiff_idx, I_idx, w_stretch_idx] = np.nan
+
+        # PTCC metric
 
         # Plot muscle activities
         plt.figure(f'muscle_activities_Idiff_{Idiff}_I_{I}_w_stretch_{w_stretch}')
@@ -135,7 +139,7 @@ def exercise7():
     # Plotting heatmaps for the metrics
     for idiff_idx, Idiff in enumerate(Idiff_values):
         plt.figure(f'Frequency vs I and gss for Idiff={Idiff}')
-        sns.heatmap(frequency_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(frequency_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Frequency vs I and gss for Idiff={Idiff}')
@@ -143,7 +147,7 @@ def exercise7():
         plt.close()
 
         plt.figure(f'Wave Frequency vs I and gss for Idiff={Idiff}')
-        sns.heatmap(wavefrequency_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(wavefrequency_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Wave Frequency vs I and gss for Idiff={Idiff}')
@@ -151,7 +155,7 @@ def exercise7():
         plt.close()
 
         plt.figure(f'Forward Speed vs I and gss for Idiff={Idiff}')
-        sns.heatmap(forward_speed_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(forward_speed_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Forward Speed vs I and gss for Idiff={Idiff}')
@@ -159,7 +163,7 @@ def exercise7():
         plt.close()
 
         plt.figure(f'Curvature vs I and gss for Idiff={Idiff}')
-        sns.heatmap(curvature_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(curvature_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Curvature vs I and gss for Idiff={Idiff}')
@@ -167,7 +171,7 @@ def exercise7():
         plt.close()
 
         plt.figure(f'Lateral Speed vs I and gss for Idiff={Idiff}')
-        sns.heatmap(lateral_speed_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(lateral_speed_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Lateral Speed vs I and gss for Idiff={Idiff}')
@@ -175,7 +179,7 @@ def exercise7():
         plt.close()
 
         plt.figure(f'Turning Radius vs I and gss for Idiff={Idiff}')
-        sns.heatmap(radii[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(radii[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Turning Radius vs I and gss for Idiff={Idiff}')
@@ -183,11 +187,20 @@ def exercise7():
         plt.close()
 
         plt.figure(f'Total Distance Swum vs I and gss for Idiff={Idiff}')
-        sns.heatmap(total_distance_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=True, cmap='viridis', fmt=".2f")
+        sns.heatmap(total_distance_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
         plt.xlabel('gss')
         plt.ylabel('I')
         plt.title(f'Total Distance Swum vs I and gss for Idiff={Idiff}')
         plt.savefig(f'{log_path}/heatmap_total_distance_vs_I_w_stretch_Idiff_{Idiff}.png')
+        plt.close()
+
+        # Plot PTCC heatmap
+        plt.figure(f'PTCC vs I and gss for Idiff={Idiff}')
+        sns.heatmap(ptcc_values[idiff_idx, :, :], xticklabels=w_stretch_values, yticklabels=I_values, annot=False, cmap='viridis', fmt=".2f")
+        plt.xlabel('gss')
+        plt.ylabel('I')
+        plt.title(f'PTCC vs I and gss for Idiff={Idiff}')
+        plt.savefig(f'{log_path}/heatmap_ptcc_vs_I_w_stretch_Idiff_{Idiff}.png')
         plt.close()
 
     pylog.info("Plots saved successfully")
