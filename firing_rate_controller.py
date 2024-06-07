@@ -90,7 +90,7 @@ class FiringRateController:
             x_new = -0.1*x_prev*dt+sigma*sqrt(dt)*Wiener
         """
         dw = np.sqrt(timestep) * np.random.randn(*x_prev.shape)
-        dx_process = -0.1 * x_prev * timestep + sigma * dw
+        dx_process = -self.pars.theta * x_prev * timestep + sigma * dw * np.sqrt(timestep)
         return x_prev + dx_process
 
     def step_euler(self, iteration, time, timestep, pos=None):
@@ -187,10 +187,6 @@ class FiringRateController:
             theta = CubicSpline(self.poses, pos)(self.poses_ext)
             self.dstate[self.left_s] = (np.sqrt(np.maximum(theta, 0)) * (1 - state[self.left_s]) - state[self.left_s])/self.pars.tau_str
             self.dstate[self.right_s] = (np.sqrt(np.maximum(-theta, 0)) * (1 - state[self.right_s]) - state[self.right_s])/self.pars.tau_str
-
-        # CPG dynamics
-        #input_left = self.pars.I - self.pars.b * state[self.left_a]
-        #input_right = self.pars.I - self.pars.b * state[self.right_a]
 
         # CPG dynamics with Idiff
         input_left = self.pars.I +self.pars.Idiff - self.pars.b * state[self.left_a]

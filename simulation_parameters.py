@@ -78,7 +78,8 @@ class SimulationParameters:
         self.tau_str = 0.005  # stretch time scale
 
         # noise pars
-        self.noise_sigma = 0  # sigma of the OU noise process
+        self.noise_sigma = 0.  # sigma of the OU noise process
+        self.theta = 0.
 
         # NOTE: This overrides the previous declarations
         self.__dict__.update(kwargs)
